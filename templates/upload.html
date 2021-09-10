@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>水印处理工具</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+            background-color: #f1f0f0;
+        }
+
+        #header {
+        position: relative;
+        height: 56px;
+        width: 100%;
+        background: #f1f0f0;
+      }
+
+      #nav1 {
+        position: fixed;
+        top:0;
+        left:0;
+        width: 100%;
+        height: 56px;
+        line-height: 56px;
+        background: #fff;
+        font-size: 24px;
+        font-family: 幼圆,serif;
+        z-index:9;
+        border-color: #f0f0f0;
+        box-shadow: 0 2px 4px 0 rgba(0,0,0,.05);
+      }
+
+        #tit {
+        font-size: 2em;
+        font-family: "Agency FB",serif;
+        font-weight:bold;
+        color: #2698df;
+            text-align: center;
+      }
+
+        .pic{
+            float: left;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: 5px;
+            box-shadow: 7px 7px 30px #bdbdbd, -7px -7px 30px #ffffff;
+            text-align: center
+         }
+
+        .pic:hover .delpic{
+          top:7px;
+        }
+
+        .pic p{
+          width: 80%;
+          margin: 10px auto;
+          white-space: normal;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color:#5f5f5f;
+          font-size:14px;
+        }
+
+        .delpic{
+          position: absolute;
+          top:-30px;
+          width:20px;
+          height:20px;
+          border-radius: 50%;
+          transition:all .5s;
+          background: #0000008c;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 16px;
+          color: #fff;
+          line-height: 20px;
+          right: 10px;
+          cursor: pointer;
+        }
+
+        img{
+          width:100%;
+          height:100%;
+          box-sizing: border-box;
+        }
+
+        .banner {
+            background-size: cover;
+            position: relative;
+            height: 600px;
+        }
+
+        .banner .left {
+            position: absolute;
+            left: 50%;
+            top:50%;
+            transform: translateX(calc(-20% - 500px)) translateY(-50%);
+        }
+        .banner .right {
+            position: absolute;
+            right: 50%;
+            top:50%;
+            transform: translateX(calc(20% + 500px)) translateY(-50%);
+        }
+
+        .drag-wrapper{
+          width:500px;
+          height: 500px;
+          position: relative;
+           border: 4px dotted #2698df;
+          overflow: hidden;
+          background: #fff;
+        }
+
+        .drag-wrapper .placelabel{
+          text-align: center;
+          color: #2698df;
+          font-size: 20px;
+            width: 140px;
+        }
+
+        .uploadbtns{
+            background: #73c9e5;
+            color: #fff;
+            cursor: pointer;
+            width:150px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 24px;
+            position: absolute;
+            left:50%;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .uploadbtns:hover{opacity: .8}
+
+        @keyframes move{
+            0%{transform: translate(-50%,-50%);}
+            50%{transform: translate(-50%,-53%);}
+            100%{transform: translate(-50%,-50%);}
+        }
+        #prePic {
+            position:absolute;
+            width: 500px;
+            height: 500px;
+            top:50%;
+            left:50%;
+            transform: translate(-50%,-50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: move 1.5s linear infinite;
+            animation-play-state:paused;
+            cursor: pointer;
+        }
+
+        #prePic:hover {
+            animation-play-state: running;
+        }
+
+        #inputImg {
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            opacity:0;
+            cursor: pointer;
+        }
+
+        #returnImg {
+            object-fit: contain;
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div id="header">
+        <div id="nav1" >
+            <div id="tit">
+                水印处理器
+            </div>
+        </div>
+    </div>
+    <div class="banner">
+        <div class="drag-wrapper left" id="uploadimg">
+            <div id="prePic">
+                <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
+                <span class="placelabel">点击上传图片 支持拖拽和粘贴 </span>
+                <input type="file" id="inputImg" accept="image/png, image/jpeg" />
+            </div>
+        </div>
+        <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
+        <div class="drag-wrapper right" >
+        </div>
+    </div>
+</body>
+<script>
+let filearr = [];//所有文件汇总
+let base64 = ''; //图片字符串形式
+let ftype = ''; //图片类型
+
+function imgChange(){
+    let file = this.files[0];
+    let fd = new FileReader();
+    let fivarype = file.type;//文件类型
+    let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
+    fd.readAsDataURL(file);
+    if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
+        filearr.push(file);
+        (function(e) {
+            fd.onload = function(){
+                //返回的result是base64
+                var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
+                $("#uploadimg").prepend(html);
+                document.getElementById("prePic").style.visibility="hidden";
+                base64 = this.result.match(/image\/(jpeg|png|jpg);base64,((.)+)/)[2];
+                ftype = suff;
+            }
+        })(file.name);
+    }else{
+        alert('仅支持拖拽图片')
+    }
+}
+
+
+$("#inputImg").bind('change', imgChange);
+
+//监听拖拽
+$('.drag-wrapper').on('dragover',function(event){
+    event.preventDefault();//防止浏览器冒泡，直接打开文件
+}).on('drop',function(event){
+    event.preventDefault();
+    //数据在event的dataTransfer对象里
+    for(let i = 0; i < event.originalEvent.dataTransfer.files.length; i++){
+        let file = event.originalEvent.dataTransfer.files[i];
+        //用fileReader实现图片上传
+        let fd = new FileReader();
+        let fivarype = file.type;//文件类型
+        let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
+        fd.readAsDataURL(file);
+        if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
+            filearr.push(file);
+            (function(e) {
+                fd.onload = function(){
+                    //返回的result是base64
+                    var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
+                    $("#uploadimg").prepend(html);
+                    document.getElementById("prePic").style.visibility="hidden";
+                    base64 = this.result.match(/image\/(jpeg|png|jpg);base64,((.)+)/)[2];
+                    ftype = suff;
+                }
+            })(file.name);
+        }else{
+            alert('仅支持拖拽图片')
+        }
+    }
+    let formData = new FormData();
+    formData.append('file',file);
+});
+
+//监听粘贴，仅支持截图后粘贴
+$("#uploadimg").on('paste', function(eventObj) {
+    // 处理粘贴事件
+    let event = eventObj.originalEvent;
+    let imageRe = new RegExp(/image\/.*/);
+    let fileList = $.map(event.clipboardData.items, function (o) {
+        if(!imageRe.test(o.type)) return;
+        return o.getAsFile();
+    });
+    if(fileList.length <= 0){
+        return
+    }else{
+        for(let i = 0; i < fileList.length; i++){
+            let file = fileList[i];
+            //用fileReader实现图片上传
+            let fd = new FileReader();
+            let fivarype = file.type;//文件类型
+            let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
+            fd.readAsDataURL(file);
+            if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
+                filearr.push(file);
+                (function(e) {
+                    fd.onload = function(){
+                        //返回的result是base64
+                        let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
+                        $("#uploadimg").prepend(html);
+                        document.getElementById("prePic").style.visibility="hidden";
+                        base64 = this.result.match(/image\/(jpeg|png|jpg);base64,((.)+)/)[2];
+                        ftype = suff;
+                    }
+                })(file.name);
+
+            }else{
+                alert('仅支持粘贴图' +
+                    '片')
+            }
+        }
+    }
+    //upload(fileList);
+    //阻止默认行为即不让剪贴板内容在div中显示出来
+    event.preventDefault();
+});
+
+//移除
+function delpicthis(name,that){
+    $(that).parent().remove();
+    document.getElementById("prePic").style.visibility="visible";
+    document.getElementById("inputImg").remove();
+    let html = '<input type="file" id="inputImg" accept="image/png, image/jpeg" />';
+    $("#prePic").prepend(html);
+    $("#inputImg").bind('change', imgChange);
+    base64 = '';
+    for(let c in filearr){
+        if(filearr[c].name === name){
+            filearr.splice(c,1);
+            return;
+        }
+    }
+}
+
+//上传照片
+let uploading = false;//是否处于上传中
+function uploadFiles(){
+    if(uploading){
+        return;
+    }
+    if(base64 === ''){
+        alert("请先添加上传文件！");
+        return;
+    }
+    $.ajax({
+        type: 'post',
+        dataType: "text",
+        data:{'type': ftype , 'str': base64},
+        url:"http://127.0.0.1:5000/upload",
+        async: false,
+        beforeSend: function(){
+            uploading = true;    //防止点多次
+        },
+        success: function(data){
+            let html = '<img alt id="returnImg" src="data:image/jpg;base64,'+ data +'"/>';
+            $(".right").prepend(html);
+            uploading = false;
+        },
+        error:function (e) {
+            console.log("error："+e);
+            uploading = false;
+        }
+    });
+}
+</script>
