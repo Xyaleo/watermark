@@ -216,6 +216,10 @@ let base64 = ''; //图片字符串形式
 let ftype = ''; //图片类型
 
 function imgChange(){
+    if (base64 !== '') {
+        alert("当前已有图片，再先删除再添加");
+        return;
+    }
     let file = this.files[0];
     let fd = new FileReader();
     let fivarype = file.type;//文件类型
@@ -245,6 +249,10 @@ $("#inputImg").bind('change', imgChange);
 $('.drag-wrapper').on('dragover',function(event){
     event.preventDefault();//防止浏览器冒泡，直接打开文件
 }).on('drop',function(event){
+     if (base64 !== '') {
+        alert("当前已有图片，再先删除再添加");
+        return;
+    }
     event.preventDefault();
     //数据在event的dataTransfer对象里
     for(let i = 0; i < event.originalEvent.dataTransfer.files.length; i++){
@@ -276,6 +284,10 @@ $('.drag-wrapper').on('dragover',function(event){
 
 //监听粘贴，仅支持截图后粘贴
 $("#uploadimg").on('paste', function(eventObj) {
+    if (base64 !== '') {
+        alert("当前已有图片，再先删除再添加");
+        return;
+    }
     // 处理粘贴事件
     let event = eventObj.originalEvent;
     let imageRe = new RegExp(/image\/.*/);
@@ -365,3 +377,4 @@ function uploadFiles(){
     });
 }
 </script>
+
