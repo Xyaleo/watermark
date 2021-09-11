@@ -9,7 +9,8 @@ from PIL import Image
 import numpy as np
 import base64
 
-n2n = ''
+n2n: Noise2Noise
+
 
 def parse_args():
     """Command-line argument parser for testing."""

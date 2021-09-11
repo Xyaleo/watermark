@@ -6,14 +6,14 @@
 html, body {
     width: 100%;
     height: 100%;
-    background-color: #f1f0f0;
+    background-color: #f3f3f3;
 }
 
 #header {
     position: relative;
     height: 56px;
     width: 100%;
-    background: #f1f0f0;
+    background: #f3f3f3;
 }
 
 #nav1 {
@@ -91,9 +91,8 @@ img {
 }
 
 #startPlace {
-    background-size: cover;
     position: relative;
-    height: 600px;
+    height: 90vh;
 }
 
 #startPlace .center {
@@ -102,19 +101,20 @@ img {
     top: 50%;
     width: 700px;
     height: 400px;
-    transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-45%);
 }
 
 .str {
     text-align: center;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: bold;
-    margin-top: 40px;
+    padding-top: 20px;
 }
+
 #banner {
     background-size: cover;
     position: relative;
-    height: 650px;
+    height: 90vh;
     display: none;
 }
 
@@ -148,8 +148,16 @@ img {
     width: 140px;
 }
 
-.uploadbtns {
-    background: #73c9e5;
+.string {
+    color: #2698df;
+    font-size: 32px;
+    position: absolute;
+    left: 50%;
+    top: 3%;
+}
+
+.uploadbtns, .morebtns {
+    background: #2698df;
     color: #fff;
     cursor: pointer;
     width: 200px;
@@ -159,9 +167,17 @@ img {
     border-radius: 5px;
     font-size: 24px;
     position: absolute;
+}
+
+.uploadbtns {
     left: 50%;
     bottom: 2%;
     transform: translateX(-450px);
+}
+
+.morebtns {
+    left: calc(50% - 100px);
+    top: 40%;
 }
 
 .uploadbtns:hover {
@@ -184,6 +200,38 @@ img {
     transform: translateX(250px);
 }
 
+.stacking-slide {
+    transition: all 0.5s ease-in-out;
+    scroll-snap-align: start;
+    height: 50vh;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    padding: 30px;
+    background-color: #fff;
+}
+
+.stacking-slide * {
+    opacity: 0.2;
+    transform: translateY(8rem) scale(0.7);
+    transition: all 1.5s ease-in-out;
+}
+
+.is-intersecting {
+    box-shadow: 0 0 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.is-intersecting * {
+    opacity: 1;
+    transform: translatey(0) scale(1);
+}
+
+.vertical-scroll-snap {
+    overflow-y: hidden;
+    scroll-snap-type: y mandatory;
+    max-height: 100vh;
+}
+
 @keyframes move {
     0% {
         transform: translate(-50%, -50%);
@@ -196,7 +244,7 @@ img {
     }
 }
 
-#prePic, #prePicS{
+#prePic, #prePicS {
     position: absolute;
     width: 500px;
     height: 500px;
@@ -208,7 +256,7 @@ img {
     justify-content: center;
     align-items: center;
     animation: move 1.5s linear infinite;
-    animation-play-state: paused;
+    animation-play-state: running;
     cursor: pointer;
 }
 
@@ -219,7 +267,7 @@ img {
 }
 
 #prePic, #prePicS:hover {
-    animation-play-state: running;
+    animation-play-state: paused;
 }
 
 #inputImg, #inputImgS {

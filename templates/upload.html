@@ -28,13 +28,14 @@
 <div id="header">
     <div id="nav1">
         <div id="tit">
-            水印处理器
+            ❄水印处理器
         </div>
     </div>
 </div>
 <div class="alert"></div>
 <div id="startPlace" class="inPaste">
     <div class="str">一键快速去除图片水印</div>
+    <div class="str" style="font-weight: normal; font-size: 22px;">支持jpg，png格式</div>
     <div class="drag-wrapper center inDragover">
         <div id="prePicS">
             <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
@@ -51,44 +52,53 @@
             <input type="file" id="inputImg" accept="image/png, image/jpeg"/>
         </div>
     </div>
+    <div class="string" style="transform: translateX(-376px);">原图</div>
     <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
     <div class="drag-wrapper right"></div>
+    <div class="string" style="transform: translateX(310px);">预览</div>
     <div class="savebtns" onclick="saveFiles()">保存图片</div>
+</div>
+<div class="vertical-scroll-snap">
+    <section class="stacking-slide">
+        <div class="str"> 有多张图片要处理?</div>
+        <div class="str" style="font-weight: normal; font-size: 22px;">别慌，试试这个功能:</div>
+        <div class="morebtns" >批量去除水印</div>
+    </section>
 </div>
 </body>
 <script>
     let base64 = ''; //图片字符串形式
     let ftype = ''; //图片类型
-    let lock = false; //图片锁, 防止手速怪
+    let lock = false; //图片锁
     let firstAdd = true;
 
     //通用获取图片函数
     function setImg(file) {
         let fd = new FileReader();
-            let fivarype = file.type;//文件类型
-            let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
-            fd.readAsDataURL(file);
-            if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
-                (function (e) {
-                    fd.onload = function () {
-                        //返回的result是base64
-                        let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
-                        $("#uploadimg").prepend(html);
-                        document.getElementById("prePic").style.visibility = "hidden";
-                        base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
-                        ftype = suff;
-                        if (firstAdd) {
-                            document.getElementById("startPlace").style.display = "none";
-                            document.getElementById("banner").style.display = "block";
-                            firstAdd = false;
-                            uploadFiles();
-                        }
+        let fivarype = file.type;//文件类型
+        let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
+        fd.readAsDataURL(file);
+        if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
+            (function (e) {
+                fd.onload = function () {
+                    //返回的result是base64
+                    let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
+                    $("#uploadimg").prepend(html);
+                    document.getElementById("prePic").style.visibility = "hidden";
+                    base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
+                    ftype = suff;
+                    if (firstAdd) {
+                        document.getElementById("startPlace").style.display = "none";
+                        document.getElementById("banner").style.display = "block";
+                        firstAdd = false;
+                        uploadFiles();
                     }
-                })(file.name);
+                }
+            })(file.name);
 
-            } else {
-                warning_prompt('仅支持图片文件', '提示');
-            }
+        } else {
+            warning_prompt('仅支持图片文件', '提示');
+        }
     }
 
 
@@ -138,7 +148,7 @@
         lock = false;
     });
 
-    //监听粘贴，仅支持截图后粘贴
+    //监听粘贴
     $('.inPaste').on('paste', function (eventObj) {
         let event = eventObj.originalEvent;
         if (base64 !== '') {
@@ -220,9 +230,25 @@
                 console.log("error：" + e);
                 uploading = false;
                 document.getElementById("loading").style.display = "none";
-                fail_prompt('请求失败', '未知错误');
+                fail_prompt('未知错误', '请求失败');
             }
         });
     }
+
+    //批量动画处理
+    const sectionEls = document.querySelector(".stacking-slide");
+    const options = {
+        rootMargin: "-10% 0% -10% 0%"
+    };
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("is-intersecting");
+            } else {
+                entry.target.classList.remove("is-intersecting");
+            }
+        });
+    }, options);
+    observer.observe(sectionEls);
 </script>
 
