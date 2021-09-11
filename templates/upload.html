@@ -190,7 +190,7 @@
         $(that).parent().remove();
         document.getElementById("prePic").style.visibility = "visible";
         document.getElementById("inputImg").remove();
-        let html = '<input type="file" id="inputImg" accept="image/png, image/jpeg" />';
+        let html = '<input type="file" id="inputImg" accept="image/png, image/jpg" />';
         $("#prePic").prepend(html);
         $("#inputImg").bind('change', imgChange);
         base64 = '';
@@ -209,7 +209,7 @@
             return;
         }
         if (base64 === '') {
-            alert("请先添加上传文件！");
+            warning_prompt('还未添加图片', '提示');
             return;
         }
         $.ajax({
@@ -222,7 +222,11 @@
                 document.getElementById("loading").style.display = "block";
             },
             success: function (data) {
-                let html = '<img alt id="returnImg" src="data:image/jpg;base64,' + data + '"/>';
+                data = JSON.parse(data);  //res为base64字符串，fileType为图片后缀名
+                if ($("#returnImg").length > 0) {
+                    $("#returnImg").remove();
+                }
+                let html = '<img alt id="returnImg" src="data:image/' + data.fileType + ';base64,' + data.res + '"/>';
                 $(".right").prepend(html);
                 uploading = false;
                 document.getElementById("loading").style.display = "none";
