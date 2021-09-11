@@ -4,218 +4,237 @@
 <head>
     <meta charset="UTF-8">
     <title>水印处理工具</title>
-    <link type="text/css" rel="styleSheet"  href="../static/css/style.css" />
-    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <link type="text/css" rel="styleSheet" href="../static/css/style.css"/>
+    <script src="../static/js/jquery_3.3.1.js"></script>
     <script src="../static/js/tips.js"></script>
 </head>
 
 <body>
-    <div id="header">
-        <div id="nav1" >
-            <div id="tit">
-                水印处理器
-            </div>
+<div class="zh-loading-box" id="loading">
+    <div class="zh-loading-inner">
+        <div class="zh-loading">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <p>正在处理水印···</p>
+    </div>
+</div>
+<div id="header">
+    <div id="nav1">
+        <div id="tit">
+            水印处理器
         </div>
     </div>
-    <div class="alert"></div>
-    <div class="banner">
-        <div class="drag-wrapper left" id="uploadimg">
-            <div id="prePic">
-                <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
-                <span class="placelabel">点击上传图片 支持拖拽和粘贴 </span>
-                <input type="file" id="inputImg" accept="image/png, image/jpeg" />
-            </div>
-        </div>
-        <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
-        <div class="drag-wrapper right" >
+</div>
+<div class="alert"></div>
+<div class="banner">
+    <div class="drag-wrapper left" id="uploadimg">
+        <div id="prePic">
+            <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
+            <span class="placelabel">点击上传图片 支持拖拽和粘贴 </span>
+            <input type="file" id="inputImg" accept="image/png, image/jpeg"/>
         </div>
     </div>
+    <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
+    <div class="drag-wrapper right">
+    </div>
+</div>
 </body>
 <script>
-let filearr = [];//所有文件汇总
-let base64 = ''; //图片字符串形式
-let ftype = ''; //图片类型
-let lock = false; //图片锁, 防止手速怪
+    let filearr = [];//所有文件汇总
+    let base64 = ''; //图片字符串形式
+    let ftype = ''; //图片类型
+    let lock = false; //图片锁, 防止手速怪
 
-function imgChange(){
-    if (base64 !== '') {
-        warning_prompt('请先删除图片再添加', '提示');
-        return;
-    }
-    if (lock === true) {
-        warning_prompt('请先删除图片再添加', '提示');
-        return;
-    }
-    lock = true;
-    let file = this.files[0];
-    let fd = new FileReader();
-    let fivarype = file.type;//文件类型
-    let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
-    fd.readAsDataURL(file);
-    if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
-        filearr.push(file);
-        (function(e) {
-            fd.onload = function(){
-                //返回的result是base64
-                var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
-                $("#uploadimg").prepend(html);
-                document.getElementById("prePic").style.visibility="hidden";
-                base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
-                ftype = suff;
-            }
-        })(file.name);
-    }else{
-        alert('仅支持拖拽图片')
-    }
-    lock = false;
-}
-
-
-$("#inputImg").bind('change', imgChange);
-
-//监听拖拽
-$('.drag-wrapper').on('dragover',function(event){
-    event.preventDefault();//防止浏览器冒泡，直接打开文件
-}).on('drop',function(event){
-    if (base64 !== '') {
-        warning_prompt('请先删除图片再添加', '提示');
-        event.preventDefault();
-        return;
-    }
-    if (lock === true) {
-        warning_prompt('请先删除图片再添加', '提示');
-        event.preventDefault();
-        return;
-    }
-    lock = true;
-    event.preventDefault();
-    //数据在event的dataTransfer对象里
-    for(let i = 0; i < event.originalEvent.dataTransfer.files.length; i++){
-        let file = event.originalEvent.dataTransfer.files[i];
-        //用fileReader实现图片上传
+    function imgChange() {
+        if (base64 !== '') {
+            warning_prompt('请先删除图片再添加', '提示');
+            return;
+        }
+        if (lock === true) {
+            warning_prompt('图片正在加载，请稍后', '提示');
+            return;
+        }
+        lock = true;
+        let file = this.files[0];
         let fd = new FileReader();
         let fivarype = file.type;//文件类型
-        let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
+        let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
         fd.readAsDataURL(file);
-        if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
+        if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
             filearr.push(file);
-            (function(e) {
-                fd.onload = function(){
+            (function (e) {
+                fd.onload = function () {
                     //返回的result是base64
-                    var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
+                    var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
                     $("#uploadimg").prepend(html);
-                    document.getElementById("prePic").style.visibility="hidden";
+                    document.getElementById("prePic").style.visibility = "hidden";
                     base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
                     ftype = suff;
                 }
             })(file.name);
-        }else{
-            alert('仅支持拖拽图片')
+        } else {
+            warning_prompt('仅支持拖拽图片', '提示');
         }
+        lock = false;
     }
-    lock = false;
-});
 
-//监听粘贴，仅支持截图后粘贴
-$("#uploadimg").on('paste', function(eventObj) {
-    let event = eventObj.originalEvent;
-    if (base64 !== '') {
-        warning_prompt('请先删除图片再添加', '提示');
+    $("#inputImg").bind('change', imgChange);
+
+    //监听拖拽
+    $('.drag-wrapper').on('dragover', function (event) {
+        event.preventDefault();//防止浏览器冒泡，直接打开文件
+    }).on('drop', function (event) {
+        if (base64 !== '') {
+            warning_prompt('请先删除图片再添加', '提示');
+            event.preventDefault();
+            return;
+        }
+        if (lock === true) {
+            warning_prompt('图片正在加载，请稍后', '提示');
+            event.preventDefault();
+            return;
+        }
+        lock = true;
         event.preventDefault();
-        return;
-    }
-    if (lock === true) {
-        warning_prompt('请先删除图片再添加', '提示');
-        event.preventDefault();
-        return;
-    }
-    lock = true;
-    // 处理粘贴事件
-    let imageRe = new RegExp(/image\/.*/);
-    let fileList = $.map(event.clipboardData.items, function (o) {
-        if(!imageRe.test(o.type)) return;
-        return o.getAsFile();
-    });
-    if(fileList.length <= 0){
-        return
-    }else{
-        for(let i = 0; i < fileList.length; i++){
-            let file = fileList[i];
+        //数据在event的dataTransfer对象里
+        for (let i = 0; i < event.originalEvent.dataTransfer.files.length; i++) {
+            let file = event.originalEvent.dataTransfer.files[i];
             //用fileReader实现图片上传
             let fd = new FileReader();
             let fivarype = file.type;//文件类型
-            let suff = file.name.substring(file.name.lastIndexOf(".")+1);//后缀名
+            let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
             fd.readAsDataURL(file);
-            if(/^image\/[jpeg|png|jpg]/.test(fivarype)){
+            if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
                 filearr.push(file);
-                (function(e) {
-                    fd.onload = function(){
+                (function (e) {
+                    fd.onload = function () {
                         //返回的result是base64
-                        let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\''+e+'\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="'+this.result+'"/></span>';
+                        var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
                         $("#uploadimg").prepend(html);
-                        document.getElementById("prePic").style.visibility="hidden";
+                        document.getElementById("prePic").style.visibility = "hidden";
                         base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
                         ftype = suff;
                     }
                 })(file.name);
+            } else {
+                warning_prompt('仅支持拖拽图片', '提示');
+            }
+        }
+        lock = false;
+    });
 
-            }else{
-                alert('仅支持粘贴图片');
+    //监听粘贴，仅支持截图后粘贴
+    $("#uploadimg").on('paste', function (eventObj) {
+        let event = eventObj.originalEvent;
+        if (base64 !== '') {
+            warning_prompt('请先删除图片再添加', '提示');
+            event.preventDefault();
+            return;
+        }
+        if (lock === true) {
+            warning_prompt('图片正在加载，请稍后', '提示');
+            event.preventDefault();
+            return;
+        }
+        lock = true;
+        // 处理粘贴事件
+        let imageRe = new RegExp(/image\/.*/);
+        let fileList = $.map(event.clipboardData.items, function (o) {
+            if (!imageRe.test(o.type)) return;
+            return o.getAsFile();
+        });
+        if (fileList.length <= 0) {
+            lock = false;
+            return
+        } else {
+            for (let i = 0; i < fileList.length; i++) {
+                let file = fileList[i];
+                //用fileReader实现图片上传
+                let fd = new FileReader();
+                let fivarype = file.type;//文件类型
+                let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
+                fd.readAsDataURL(file);
+                if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
+                    filearr.push(file);
+                    (function (e) {
+                        fd.onload = function () {
+                            //返回的result是base64
+                            let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
+                            $("#uploadimg").prepend(html);
+                            document.getElementById("prePic").style.visibility = "hidden";
+                            base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
+                            ftype = suff;
+                        }
+                    })(file.name);
+
+                } else {
+                    warning_prompt('仅支持拖拽图片', '提示');
+                }
+            }
+        }
+        //upload(fileList);
+        //阻止默认行为即不让剪贴板内容在div中显示出来
+        event.preventDefault();
+        lock = false;
+    });
+
+    //移除
+    function delpicthis(name, that) {
+        $(that).parent().remove();
+        document.getElementById("prePic").style.visibility = "visible";
+        document.getElementById("inputImg").remove();
+        let html = '<input type="file" id="inputImg" accept="image/png, image/jpeg" />';
+        $("#prePic").prepend(html);
+        $("#inputImg").bind('change', imgChange);
+        base64 = '';
+        for (let c in filearr) {
+            if (filearr[c].name === name) {
+                filearr.splice(c, 1);
+                return;
             }
         }
     }
-    //upload(fileList);
-    //阻止默认行为即不让剪贴板内容在div中显示出来
-    event.preventDefault();
-    lock = false;
-});
 
-//移除
-function delpicthis(name,that){
-    $(that).parent().remove();
-    document.getElementById("prePic").style.visibility="visible";
-    document.getElementById("inputImg").remove();
-    let html = '<input type="file" id="inputImg" accept="image/png, image/jpeg" />';
-    $("#prePic").prepend(html);
-    $("#inputImg").bind('change', imgChange);
-    base64 = '';
-    for(let c in filearr){
-        if(filearr[c].name === name){
-            filearr.splice(c,1);
+    //上传照片
+    let uploading = false;//是否处于上传中
+    function uploadFiles() {
+        if (uploading) {
             return;
         }
-    }
-}
-
-//上传照片
-let uploading = false;//是否处于上传中
-function uploadFiles(){
-    if(uploading){
-        return;
-    }
-    if(base64 === ''){
-        alert("请先添加上传文件！");
-        return;
-    }
-    $.ajax({
-        type: 'post',
-        dataType: "text",
-        data:{'type': ftype , 'str': base64},
-        url:"http://127.0.0.1:5000/upload",
-        async: false,
-        beforeSend: function(){
-            uploading = true;    //防止点多次
-        },
-        success: function(data){
-            let html = '<img alt id="returnImg" src="data:image/jpg;base64,'+ data +'"/>';
-            $(".right").prepend(html);
-            uploading = false;
-        },
-        error:function (e) {
-            console.log("error："+e);
-            uploading = false;
+        if (base64 === '') {
+            alert("请先添加上传文件！");
+            return;
         }
-    });
-}
+        $.ajax({
+            type: 'post',
+            dataType: "text",
+            data: {'type': ftype, 'str': base64},
+            url: "http://127.0.0.1:5000/upload",
+            beforeSend: function () {
+                uploading = true;    //防止点多次
+                document.getElementById("loading").style.display = "block";
+            },
+            success: function (data) {
+                let html = '<img alt id="returnImg" src="data:image/jpg;base64,' + data + '"/>';
+                $(".right").prepend(html);
+                uploading = false;
+                document.getElementById("loading").style.display = "none";
+                success_prompt('处理成功', '提示');
+            },
+            error: function (e) {
+                console.log("error：" + e);
+                uploading = false;
+                document.getElementById("loading").style.display = "none";
+                fail_prompt('请求失败', '未知错误');
+            }
+        });
+    }
 </script>
 
