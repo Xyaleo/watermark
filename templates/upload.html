@@ -33,8 +33,18 @@
     </div>
 </div>
 <div class="alert"></div>
-<div class="banner">
-    <div class="drag-wrapper left" id="uploadimg">
+<div id="startPlace" class="inPaste">
+    <div class="str">一键快速去除图片水印</div>
+    <div class="drag-wrapper center inDragover">
+        <div id="prePicS">
+            <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
+            <span class="placelabel">点击上传图片 支持拖拽和粘贴 </span>
+            <input type="file" id="inputImgS" accept="image/png, image/jpeg"/>
+        </div>
+    </div>
+</div>
+<div id="banner">
+    <div class="drag-wrapper left inDragover inPaste" id="uploadimg">
         <div id="prePic">
             <img alt style="width: 80px;height: 73px;" src="../static/images/pic.png"/>
             <span class="placelabel">点击上传图片 支持拖拽和粘贴 </span>
@@ -42,19 +52,49 @@
         </div>
     </div>
     <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
-    <div class="drag-wrapper right">
-    </div>
+    <div class="drag-wrapper right"></div>
+    <div class="savebtns" onclick="saveFiles()">保存图片</div>
 </div>
 </body>
 <script>
-    let filearr = [];//所有文件汇总
     let base64 = ''; //图片字符串形式
     let ftype = ''; //图片类型
     let lock = false; //图片锁, 防止手速怪
+    let firstAdd = true;
+
+    //通用获取图片函数
+    function setImg(file) {
+        let fd = new FileReader();
+            let fivarype = file.type;//文件类型
+            let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
+            fd.readAsDataURL(file);
+            if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
+                (function (e) {
+                    fd.onload = function () {
+                        //返回的result是base64
+                        let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
+                        $("#uploadimg").prepend(html);
+                        document.getElementById("prePic").style.visibility = "hidden";
+                        base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
+                        ftype = suff;
+                        if (firstAdd) {
+                            document.getElementById("startPlace").style.display = "none";
+                            document.getElementById("banner").style.display = "block";
+                            firstAdd = false;
+                            uploadFiles();
+                        }
+                    }
+                })(file.name);
+
+            } else {
+                warning_prompt('仅支持图片文件', '提示');
+            }
+    }
+
 
     function imgChange() {
         if (base64 !== '') {
-            warning_prompt('请先删除图片再添加', '提示');
+            warning_prompt('请先删除图片再重新添加', '提示');
             return;
         }
         if (lock === true) {
@@ -63,36 +103,19 @@
         }
         lock = true;
         let file = this.files[0];
-        let fd = new FileReader();
-        let fivarype = file.type;//文件类型
-        let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
-        fd.readAsDataURL(file);
-        if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
-            filearr.push(file);
-            (function (e) {
-                fd.onload = function () {
-                    //返回的result是base64
-                    var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
-                    $("#uploadimg").prepend(html);
-                    document.getElementById("prePic").style.visibility = "hidden";
-                    base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
-                    ftype = suff;
-                }
-            })(file.name);
-        } else {
-            warning_prompt('仅支持拖拽图片', '提示');
-        }
+        setImg(file);
         lock = false;
     }
 
     $("#inputImg").bind('change', imgChange);
+    $("#inputImgS").bind('change', imgChange);
 
     //监听拖拽
-    $('.drag-wrapper').on('dragover', function (event) {
+    $('.inDragover').on('dragover', function (event) {
         event.preventDefault();//防止浏览器冒泡，直接打开文件
     }).on('drop', function (event) {
         if (base64 !== '') {
-            warning_prompt('请先删除图片再添加', '提示');
+            warning_prompt('请先删除图片再重新添加', '提示');
             event.preventDefault();
             return;
         }
@@ -101,40 +124,25 @@
             event.preventDefault();
             return;
         }
+        if (event.originalEvent.dataTransfer.files.length > 1) {
+            warning_prompt('仅支持粘贴单张图片', '提示');
+            event.preventDefault();
+            return;
+        }
         lock = true;
         event.preventDefault();
         //数据在event的dataTransfer对象里
-        for (let i = 0; i < event.originalEvent.dataTransfer.files.length; i++) {
-            let file = event.originalEvent.dataTransfer.files[i];
-            //用fileReader实现图片上传
-            let fd = new FileReader();
-            let fivarype = file.type;//文件类型
-            let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
-            fd.readAsDataURL(file);
-            if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
-                filearr.push(file);
-                (function (e) {
-                    fd.onload = function () {
-                        //返回的result是base64
-                        var html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
-                        $("#uploadimg").prepend(html);
-                        document.getElementById("prePic").style.visibility = "hidden";
-                        base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
-                        ftype = suff;
-                    }
-                })(file.name);
-            } else {
-                warning_prompt('仅支持拖拽图片', '提示');
-            }
-        }
+        let file = event.originalEvent.dataTransfer.files[0];
+        //用fileReader实现图片上传
+        setImg(file);
         lock = false;
     });
 
     //监听粘贴，仅支持截图后粘贴
-    $("#uploadimg").on('paste', function (eventObj) {
+    $('.inPaste').on('paste', function (eventObj) {
         let event = eventObj.originalEvent;
         if (base64 !== '') {
-            warning_prompt('请先删除图片再添加', '提示');
+            warning_prompt('请先删除图片再重新添加', '提示');
             event.preventDefault();
             return;
         }
@@ -153,33 +161,15 @@
         if (fileList.length <= 0) {
             lock = false;
             return
+        } else if (fileList.length > 1) {
+            lock = false;
+            warning_prompt('仅支持粘贴单张图片', '提示');
+            return
         } else {
-            for (let i = 0; i < fileList.length; i++) {
-                let file = fileList[i];
-                //用fileReader实现图片上传
-                let fd = new FileReader();
-                let fivarype = file.type;//文件类型
-                let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
-                fd.readAsDataURL(file);
-                if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
-                    filearr.push(file);
-                    (function (e) {
-                        fd.onload = function () {
-                            //返回的result是base64
-                            let html = '<span class="pic" id="pictureul"><div title="移除" onclick="delpicthis(\'' + e + '\',this)" class="delpic">X</div><img alt style="object-fit: contain" src="' + this.result + '"/></span>';
-                            $("#uploadimg").prepend(html);
-                            document.getElementById("prePic").style.visibility = "hidden";
-                            base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
-                            ftype = suff;
-                        }
-                    })(file.name);
-
-                } else {
-                    warning_prompt('仅支持拖拽图片', '提示');
-                }
-            }
+            let file = fileList[0];
+            //用fileReader实现图片上传
+            setImg(file);
         }
-        //upload(fileList);
         //阻止默认行为即不让剪贴板内容在div中显示出来
         event.preventDefault();
         lock = false;
@@ -194,12 +184,6 @@
         $("#prePic").prepend(html);
         $("#inputImg").bind('change', imgChange);
         base64 = '';
-        for (let c in filearr) {
-            if (filearr[c].name === name) {
-                filearr.splice(c, 1);
-                return;
-            }
-        }
     }
 
     //上传照片
