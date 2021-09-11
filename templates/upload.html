@@ -190,7 +190,7 @@
         $(that).parent().remove();
         document.getElementById("prePic").style.visibility = "visible";
         document.getElementById("inputImg").remove();
-        let html = '<input type="file" id="inputImg" accept="image/png, image/jpg" />';
+        let html = '<input type="file" id="inputImg" accept="image/png, image/jpeg" />';
         $("#prePic").prepend(html);
         $("#inputImg").bind('change', imgChange);
         base64 = '';
@@ -227,7 +227,7 @@
                 success_prompt('处理成功', '提示');
             },
             error: function (e) {
-                console.log("error：" + e);
+                console.log("error：" + JSON.stringify(e));
                 uploading = false;
                 document.getElementById("loading").style.display = "none";
                 fail_prompt('未知错误', '请求失败');
