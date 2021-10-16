@@ -25,7 +25,7 @@ def parse_args():
                         default='./models/n2n-epoch6-0.00323.pth')
 
     parser.add_argument('--pretrain-model-path', help='pretrain model path',
-                        default='./models/n2n-epoch28-0.00204.pth')
+                        default='./models/n2n-epoch33-0.00301.pth')
 
     parser.add_argument('--show-output', help='pop up window to display outputs', default=0, type=int)
     parser.add_argument('--cuda', help='use cuda', default=True, action='store_true')
@@ -60,7 +60,6 @@ def resize_image(img, min_scale=320, max_scale=640):
 
     new_h = new_h if new_h // 32 == 0 else (new_h // 32) * 32
     new_w = new_w if new_w // 32 == 0 else (new_w // 32) * 32
-
     # re_im = cv2.resize(img, (new_w, new_h))
     return new_h, new_w
 

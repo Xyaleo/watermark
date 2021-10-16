@@ -56,27 +56,39 @@
     <div class="uploadbtns" onclick="uploadFiles()">去除水印</div>
     <div class="drag-wrapper right"></div>
     <div class="string" style="transform: translateX(310px);">预览</div>
-    <div class="savebtns" onclick="saveFiles()">保存图片</div>
+    <div class="savebtns" onclick="download()">保存图片</div>
 </div>
+
+
 <div class="vertical-scroll-snap">
     <section class="stacking-slide">
         <div class="str"> 有多张图片要处理?</div>
         <div class="str" style="font-weight: normal; font-size: 22px;">别慌，试试这个功能:</div>
-        <div class="morebtns" >批量去除水印</div>
+        <div class="morebtns">
+            批量处理
+            <input id="Mul-select" type="file"  multiple="multiple" onchange="selectImage(this)"  accept="image/png, image/jpeg" />
+        </div>
+        <div id="bar-warp">
+            <div id="bar"></div>
+            <span id="precent">0%</span>
+        </div>
     </section>
 </div>
 </body>
 <script>
     let base64 = ''; //图片字符串形式
     let ftype = ''; //图片类型
+	let fname = '';
     let lock = false; //图片锁
     let firstAdd = true;
+    let returnbase = '';
 
     //通用获取图片函数
     function setImg(file) {
         let fd = new FileReader();
         let fivarype = file.type;//文件类型
         let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
+		let pname = file.name
         fd.readAsDataURL(file);
         if (/^image\/[jpeg|png|jpg]/.test(fivarype)) {
             (function (e) {
@@ -87,6 +99,7 @@
                     document.getElementById("prePic").style.visibility = "hidden";
                     base64 = this.result.substring(this.result.indexOf(";base64,") + 8);
                     ftype = suff;
+					fname = pname;
                     if (firstAdd) {
                         document.getElementById("startPlace").style.display = "none";
                         document.getElementById("banner").style.display = "block";
@@ -99,6 +112,24 @@
         } else {
             warning_prompt('仅支持图片文件', '提示');
         }
+    }
+	
+	//批处理进度条+文件上传调用（uploadFiles2）
+    async function selectImage(imgFile) {
+        let allFile = imgFile.files;
+        let sum = 0;
+        let precent = 0;
+        document.getElementById("bar").remove();
+        let html = '<div id="bar"></div>';
+        $("#bar-warp").prepend(html);
+        for(let i = 0;i<allFile.length;i++){
+            await uploadFiles2(allFile[i]);
+            sum += 1;
+            precent=100 * sum/allFile.length;
+            document.getElementById('bar').style.width=precent+'%';
+            document.getElementById('precent').innerHTML=Math.floor(precent)+'%';
+        }
+        $('#Mul-select').val('');
     }
 
 
@@ -220,7 +251,8 @@
                 if ($("#returnImg").length > 0) {
                     $("#returnImg").remove();
                 }
-                let html = '<img alt id="returnImg" src="data:image/' + data.fileType + ';base64,' + data.res + '"/>';
+                returnbase = `data:image/${data.fileType};base64,${data.res}`
+                let html = '<img alt id="returnImg" src="'+returnbase+'"/>';
                 $(".right").prepend(html);
                 uploading = false;
                 document.getElementById("loading").style.display = "none";
@@ -234,6 +266,79 @@
             }
         });
     }
+
+    async function fdPromise(file) {
+        return new Promise((resolve, reject) => {
+            let fd = new FileReader();
+            let suff = file.name.substring(file.name.lastIndexOf(".") + 1);//后缀名
+            fd.readAsDataURL(file);
+            fd.onload = function () {
+                //返回的result是base64
+                let base = this.result.substring(this.result.indexOf(";base64,") + 8);
+                resolve(ajaxPromise(file.name, suff, base));
+            }
+        })
+    }
+
+    async function ajaxPromise(name, suff, base) {
+    return new Promise(function (resolve, reject) {
+        $.ajax({
+                type: 'post',
+                dataType: "text",
+                data: {'type': suff, 'str': base},
+                url: "http://127.0.0.1:5000/upload",
+                success: function (data) {
+                    data = JSON.parse(data);  //res为base64字符串，fileType为图片后缀名
+                    downloadFile(name, `data:image/${data.fileType};base64,${data.res}`)
+                    resolve();
+                },
+                error: function (e) {
+                    console.log("error：" + JSON.stringify(e));
+                    fail_prompt('未知错误', '请求失败');
+                    resolve();
+                }
+            })
+    });
+}
+
+	//批处理上传照片
+    async function uploadFiles2(file) {
+        if ( file === '') {
+            warning_prompt('还未添加图片', '提示');
+            return;
+        }
+        await fdPromise(file);
+    }
+
+    function download() {
+        downloadFile(fname, returnbase);
+    }
+
+    function downloadFile(fileName, content) {
+        let aLink = document.createElement('a');
+        let blob = this.base64ToBlob(content); //new Blob([content]);
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("click", true, true);//initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
+        aLink.download = fileName;
+        aLink.href = URL.createObjectURL(blob);
+        // aLink.dispatchEvent(evt);
+        aLink.click()
+      }
+
+      //base64转blob
+      function base64ToBlob(code) {
+        let parts = code.split(';base64,');
+        let contentType = parts[0].split(':')[1];
+        let raw = window.atob(parts[1]);
+        let rawLength = raw.length;
+
+        let uInt8Array = new Uint8Array(rawLength);
+
+        for (let i = 0; i < rawLength; ++i) {
+          uInt8Array[i] = raw.charCodeAt(i);
+        }
+        return new Blob([uInt8Array], {type: contentType});
+      }
 
     //批量动画处理
     const sectionEls = document.querySelector(".stacking-slide");

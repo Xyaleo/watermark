@@ -9,6 +9,38 @@ html, body {
     background-color: #f3f3f3;
 }
 
+#bar-warp{
+    width:500px;
+    height:30px;
+    border:1px solid #2698df;
+    position: absolute;
+    left: calc(50% - 250px);
+    top: 60%;
+    display: flex;
+}
+#bar{
+    width:0;
+    height:30px;
+    background-color: #2698df;
+    transition: all 0.5s;
+}
+
+#precent {
+    position: absolute;
+    line-height: 32px;
+    top: 0;
+    left: 505px;
+}
+#Mul-select{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
 #header {
     position: relative;
     height: 56px;
@@ -92,7 +124,7 @@ img {
 
 #startPlace {
     position: relative;
-    height: 90vh;
+    height: 95vh;
 }
 
 #startPlace .center {
@@ -108,7 +140,7 @@ img {
     text-align: center;
     font-size: 28px;
     font-weight: bold;
-    padding-top: 20px;
+    padding-top: 40px;
 }
 
 #banner {
@@ -156,7 +188,7 @@ img {
     top: 3%;
 }
 
-.uploadbtns, .morebtns {
+.uploadbtns, .morebtns, .savebtns{
     background: #2698df;
     color: #fff;
     cursor: pointer;
@@ -171,8 +203,14 @@ img {
 
 .uploadbtns {
     left: 50%;
-    bottom: 2%;
+    bottom: 5%;
     transform: translateX(-450px);
+}
+
+.savebtns {
+    left: 50%;
+    bottom: 5%;
+    transform: translateX(250px);
 }
 
 .morebtns {
@@ -180,24 +218,8 @@ img {
     top: 40%;
 }
 
-.uploadbtns:hover {
+.uploadbtns:hover, .savebtns:hover{
     opacity: .8
-}
-
-.savebtns {
-    background: #73c9e5;
-    color: #fff;
-    cursor: pointer;
-    width: 200px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
-    border-radius: 5px;
-    font-size: 24px;
-    position: absolute;
-    left: 50%;
-    bottom: 2%;
-    transform: translateX(250px);
 }
 
 .stacking-slide {
@@ -207,11 +229,10 @@ img {
     width: 100%;
     position: sticky;
     top: 0;
-    padding: 30px;
     background-color: #fff;
 }
 
-.stacking-slide * {
+.stacking-slide > div {
     opacity: 0.2;
     transform: translateY(8rem) scale(0.7);
     transition: all 1.5s ease-in-out;
@@ -221,7 +242,7 @@ img {
     box-shadow: 0 0 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-.is-intersecting * {
+.is-intersecting > div {
     opacity: 1;
     transform: translatey(0) scale(1);
 }
@@ -230,6 +251,7 @@ img {
     overflow-y: hidden;
     scroll-snap-type: y mandatory;
     max-height: 100vh;
+    position: relative;
 }
 
 @keyframes move {

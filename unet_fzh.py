@@ -121,7 +121,6 @@ class UNet(nn.Module):
         upsample1 = self._block5(concat2)
         # print('==upsample1.shape:', upsample1.shape)
         concat1 = torch.cat((upsample1, x), dim=1)
-
         # Final activation
         return self._block6(concat1)
 
